@@ -20,7 +20,16 @@ class Program
     {
         public string _name;
         public List<Job> _jobs = new List<Job>();
-        
+
+        public void Display()
+        {
+            Console.WriteLine($"Name: {_name}");
+            Console.WriteLine("Jobs: ");
+            foreach (Job j in _jobs)
+            {
+                j.Display();
+            }
+        }
     }
 
     static void Main(string[] args)
@@ -33,8 +42,6 @@ class Program
         walmart._startYear = 2018;
         walmart._endYear = 2020;
 
-        walmart.Display();
-
         Job bricon = new Job();
 
         bricon._company = "Bricon";
@@ -42,15 +49,13 @@ class Program
         bricon._startYear = 2020;
         bricon._endYear = 2025;
 
-        bricon.Display();
 
 
-        
         Resume aaronResume = new Resume();
         aaronResume._name = "Aaron Aultz";
         aaronResume._jobs.Add(walmart);
         aaronResume._jobs.Add(bricon);
 
-
+        aaronResume.Display();
     }
 }
