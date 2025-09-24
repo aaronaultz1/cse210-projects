@@ -46,28 +46,67 @@ class Program
             // Close journal with last divider
             Line();
         }
-        
+
         public void OutputLine(StreamWriter writer) //Create a line in the output file
         {
             writer.WriteLine("__________________________________________________\n");
         }
+
         public void SaveJournalToFile()
         {
             _fileName = SetFileName();
 
             using (StreamWriter outputFile = new StreamWriter(_fileName))
             {
-                outputFile.WriteLine($"Journal File Name: {_fileName}");
+                outputFile.WriteLine(_fileName);
 
                 foreach (Entry e in _entries)
                 {
-                    OutputLine(outputFile);
-                    e.OutputEntry(outputFile);
+                    outputFile.WriteLine($"{e._date}|{e._prompt}|{e._response}");
                 }
-                // Close output journal with last divider
-                OutputLine(outputFile);
+
             }
-            
+            Console.WriteLine($"Journal saved succesfully under {_fileName}");
+            Line();
+        }
+
+        public void LoadJournalFromFile()
+        {
+            //Get file name
+            Console.WriteLine("""Please enter the name of the file that you would like to load, including the ".txt" """);
+            Console.Write("> ");
+            _fileName = Console.ReadLine();
+
+            //Read File
+            string[] fileLines = System.IO.File.ReadAllLines(_fileName);
+
+            //Create new objects
+            Journal journal = new Journal();
+
+            journal._fileName = fileLines[0];
+
+            for (int i = 1; i < fileLines.Length; i++)
+            {
+                string line = fileLines[i].Trim(); // Remove extra spaces
+
+                string[] entryData = line.Split("|");
+
+                if (entryData.Length == 3)
+                {
+                    Entry entry = new Entry
+                    {
+                        _date = entryData[0],
+                        _prompt = entryData[1],
+                        _response = entryData[2]
+                    };
+
+                    // Add entry to journal
+                    journal._entries.Add(entry);
+                }
+            }
+
+            Console.WriteLine($"Journal loaded succesfully from {_fileName}");
+            Line();
         }
     }
 
@@ -90,12 +129,7 @@ class Program
             Console.WriteLine($"Prompt: {_prompt}");
             Console.WriteLine($"Response: {_response}");
         }
-        public void OutputEntry(StreamWriter writer)
-        {
-            writer.WriteLine($"Date: {_date}");
-            writer.WriteLine($"Prompt: {_prompt}");
-            writer.WriteLine($"Response: {_response}");
-        }
+
         public string GetDate()
         {
             //Set time
@@ -139,18 +173,6 @@ class Program
 
         
     }
-    
-
-    public void LoadJournal()
-    {
-        Console.WriteLine("""Please enter the file name you wish to load, ending in ".txt" """);
-        Console.Write("> ");
-        string filename = Console.ReadLine();
-
-        string[] lines = System.IO.File.ReadAllLines(filename);
-
-        
-    }
 
     static string DisplayMenu()
     {
@@ -175,6 +197,7 @@ class Program
         }
         else if (userChoice == "3") //Load
         {
+            journal.LoadJournalFromFile();
             return true;
         }
         else if (userChoice == "4") //Save
