@@ -1,10 +1,19 @@
 using System;
 using System.IO;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks.Dataflow;
+using System.Collections.Generic;
 
 class Program
 {
+
+    static void Line() //Adds a divider to keep everything easy to read and differentiate
+    {
+        Console.WriteLine("__________________________________________________\n");
+    }
+
 
     public class Journal
     {
@@ -30,12 +39,35 @@ class Program
             foreach (Entry e in _entries)
             {
                 // Create divider
-                Console.WriteLine("__________________________________________________");
+                Line();
                 // Display current entry within loop
                 e.DisplayEntry();
             }
             // Close journal with last divider
-            Console.WriteLine("__________________________________________________");
+            Line();
+        }
+        
+        public void OutputLine(StreamWriter writer) //Create a line in the output file
+        {
+            writer.WriteLine("__________________________________________________\n");
+        }
+        public void SaveJournalToFile()
+        {
+            _fileName = SetFileName();
+
+            using (StreamWriter outputFile = new StreamWriter(_fileName))
+            {
+                outputFile.WriteLine($"Journal File Name: {_fileName}");
+
+                foreach (Entry e in _entries)
+                {
+                    OutputLine(outputFile);
+                    e.OutputEntry(outputFile);
+                }
+                // Close output journal with last divider
+                OutputLine(outputFile);
+            }
+            
         }
     }
 
@@ -58,6 +90,12 @@ class Program
             Console.WriteLine($"Prompt: {_prompt}");
             Console.WriteLine($"Response: {_response}");
         }
+        public void OutputEntry(StreamWriter writer)
+        {
+            writer.WriteLine($"Date: {_date}");
+            writer.WriteLine($"Prompt: {_prompt}");
+            writer.WriteLine($"Response: {_response}");
+        }
         public string GetDate()
         {
             //Set time
@@ -74,9 +112,11 @@ class Program
             {
                 "Who was the most interesting person I interacted with today?",
                 "What was the most difficult part of the day?",
-                "What was one thing that made you smile today?",
-                "Out of all the emotions you felt today, which one did you feel the strongest?",
-                "How did you draw closer to the Savior today?"
+                "What was one thing that made me smile today?",
+                "Out of all the emotions I felt today, which one did I feel the strongest?",
+                "How did I draw closer to the Savior today?",
+                "What was the best part of my day?",
+                "If I had one thing I could do over today, what would it be?"
             };
 
             Random random = new Random();
@@ -99,17 +139,75 @@ class Program
 
         
     }
+    
+
+    public void LoadJournal()
+    {
+        Console.WriteLine("""Please enter the file name you wish to load, ending in ".txt" """);
+        Console.Write("> ");
+        string filename = Console.ReadLine();
+
+        string[] lines = System.IO.File.ReadAllLines(filename);
+
+        
+    }
+
+    static string DisplayMenu()
+    {
+        Console.Write("Please select one of the following choices\n1. Write\n2. Display\n3. Load\n4. Save\n5. Quit\nWhat would you like to do?\n> ");
 
 
+        return Console.ReadLine();
+    }
 
+    static bool HandleMenu(string userChoice, Journal journal)
+    {
+        if (userChoice == "1") //Write
+        {
+            journal.WriteEntryAndAddToJournal();
+            Line();
+            return true;
+        }
+        else if (userChoice == "2") //Display
+        {
+            journal.DisplayJournal();
+            return true;
+        }
+        else if (userChoice == "3") //Load
+        {
+            return true;
+        }
+        else if (userChoice == "4") //Save
+        {
+            journal.SaveJournalToFile();
+            return true;
+        }
+        else if (userChoice == "5") //Quit
+        {
+            Console.WriteLine("\n\nThanks for using the Journal Program today. Hope to see you soon!");
+            return false;
+        }
+        else
+        {
+            Console.WriteLine("ERROR. Please enter a valid option.");
+            return true;
+        }
+    }
     static void Main(string[] args)
     {
         Journal journal = new Journal();
-        // Ask user to input valid file name
-        journal._fileName = journal.SetFileName();
-        // Create an entry and add it to the jouranl
-        journal.WriteEntryAndAddToJournal();
-        // Display the journal contents
-        journal.DisplayJournal();
+        bool isRunning = true;
+
+        Console.WriteLine("Welcome to the Journal Program, written by Aaron Aultz");
+
+        while (isRunning == true)
+        {
+            string userChoice = DisplayMenu();
+
+            isRunning = HandleMenu(userChoice, journal);
+
+        }
+
+
     }
 }
