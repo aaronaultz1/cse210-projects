@@ -70,7 +70,7 @@ class Program
             Line();
         }
 
-        public void LoadJournalFromFile()
+        public Journal LoadJournalFromFile()
         {
             //Get file name
             Console.WriteLine("""Please enter the name of the file that you would like to load, including the ".txt" """);
@@ -80,33 +80,45 @@ class Program
             //Read File
             string[] fileLines = System.IO.File.ReadAllLines(_fileName);
 
-            //Create new objects
+            //Create new journal instance
             Journal journal = new Journal();
 
+            // Update file name
             journal._fileName = fileLines[0];
 
-            for (int i = 1; i < fileLines.Length; i++)
+            // Set loop factor
+            int i = 0;
+
+            foreach (string line in fileLines)
             {
-                string line = fileLines[i].Trim(); // Remove extra spaces
-
-                string[] entryData = line.Split("|");
-
-                if (entryData.Length == 3)
+                if (i == 0)
                 {
-                    Entry entry = new Entry
-                    {
-                        _date = entryData[0],
-                        _prompt = entryData[1],
-                        _response = entryData[2]
-                    };
+                    i = 1;
+                    continue; // Skip first line (file name)
+                }
+                else
+                {
+                    Entry entry = new Entry(); // Create new entry instance
+                    string[] entryData = line.Split("|"); // Split entry data by divider
+
+                    // Set variables within entry
+                    entry._date = entryData[0];
+                    entry._prompt = entryData[1];
+                    entry._response = entryData[2];
 
                     // Add entry to journal
                     journal._entries.Add(entry);
+
                 }
+
+
             }
+
 
             Console.WriteLine($"Journal loaded succesfully from {_fileName}");
             Line();
+            return journal;
+            
         }
     }
 
@@ -182,43 +194,9 @@ class Program
         return Console.ReadLine();
     }
 
-    static bool HandleMenu(string userChoice, Journal journal)
-    {
-        if (userChoice == "1") //Write
-        {
-            journal.WriteEntryAndAddToJournal();
-            Line();
-            return true;
-        }
-        else if (userChoice == "2") //Display
-        {
-            journal.DisplayJournal();
-            return true;
-        }
-        else if (userChoice == "3") //Load
-        {
-            journal.LoadJournalFromFile();
-            return true;
-        }
-        else if (userChoice == "4") //Save
-        {
-            journal.SaveJournalToFile();
-            return true;
-        }
-        else if (userChoice == "5") //Quit
-        {
-            Console.WriteLine("\n\nThanks for using the Journal Program today. Hope to see you soon!");
-            return false;
-        }
-        else
-        {
-            Console.WriteLine("ERROR. Please enter a valid option.");
-            return true;
-        }
-    }
     static void Main(string[] args)
     {
-        Journal journal = new Journal();
+        Journal journal = null; // Create empty journal instance
         bool isRunning = true;
 
         Console.WriteLine("Welcome to the Journal Program, written by Aaron Aultz");
@@ -227,7 +205,41 @@ class Program
         {
             string userChoice = DisplayMenu();
 
-            isRunning = HandleMenu(userChoice, journal);
+            if (userChoice == "1") //Write
+            {
+                if (journal == null)
+                {
+                    journal = new Journal(); // Create new journal instance if it is the user's first entry
+                }
+                journal.WriteEntryAndAddToJournal();
+                Line();
+                
+            }
+            else if (userChoice == "2") //Display
+            {
+                journal.DisplayJournal();
+                
+            }
+            else if (userChoice == "3") //Load
+            {
+                journal = journal.LoadJournalFromFile();
+            
+            }
+            else if (userChoice == "4") //Save
+            {
+                journal.SaveJournalToFile();
+                
+            }
+            else if (userChoice == "5") //Quit
+            {
+                Console.WriteLine("\n\nThanks for using the Journal Program today. Hope to see you soon!\n\n");
+                isRunning = false;
+            }
+            else
+            {
+                Console.WriteLine("ERROR. Please enter a valid option.");
+    
+            }
 
         }
 
