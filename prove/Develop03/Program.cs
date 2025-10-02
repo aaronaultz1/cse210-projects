@@ -6,7 +6,7 @@ using System.Collections.Generic;
 // https://stackoverflow.com/questions/69424776/how-can-i-access-a-private-variable-in-another-class-in-c-sharp
 
 
-
+// Console.Clear();
 
 class Program
 {
@@ -38,16 +38,33 @@ class Program
             }
 
         }
-
-
     }
 
+    void loadScriptures(List<string> scriptureList)
+        {
+        
+            string[] fileLines = System.IO.File.ReadAllLines(scriptures.txt);
 
+            foreach (string line in fileLines)
+            {
+                
+                string[] entryData = line.Split("|"); // Split scripture data, reference | text
+
+                // Set variables 
+                reference = entryData[0];
+                text = entryData[1];
+
+                scriptureList.Add(scripture);
+            }
+        }
+
+      
 
     static void Main(string[] args)
     {
-        Scripture test = new Scripture();
-        test.ConstructScripture("John 3:16", "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.");
-        test.DisplayScripture();
+        // Initialize scripture list
+        List<Scripture> scriptureList = "";
+        loadScriptures(scriptureList);
+        
     }
 }
