@@ -23,21 +23,32 @@ class Program
     {
         // Unique class variable for which scripture will be challenged
         private Scripture _challenge = new Scripture();
-
+        private int _challengeIndex;
         // Set selected scripture class to a local variable
         public void GetScriptureChallenge(Scripture scripture)
         {
             _challenge = scripture;
+            _challengeIndex = scripture.GetIndex();
         }
-
+        public void MasterScripture(List<Scripture> scriptureList)
+        {
+            foreach (Scripture s in scriptureList)
+            {
+                if (_challengeIndex == s.GetIndex()) // Find selected scripture
+                {
+                    s.MarkMastered();
+                }
+            }
+        }
         public void DisplayChallenge()
         {
             _challenge.DisplayScripture();
         }
-        public void PlayChallenge()
+        
+        public void PlayChallenge(List<Scripture> scriptureList)
         {
             Words challengeWords = _challenge.GetWords();
-            
+
 
             Console.Clear();
             bool runChallenge = true;
@@ -50,7 +61,7 @@ class Program
                 }
                 Console.Clear();
                 _challenge.DisplayScripture();
-                Console.Write("\nPress ENTER to continue or type 'quit' to return to Mastery Selection");
+                Console.WriteLine("\nPress ENTER to continue or type 'quit' to return to Mastery Selection");
                 Console.Write("> ");
 
                 string userInput = Console.ReadLine();
@@ -66,15 +77,17 @@ class Program
             Console.Clear();
             if (challengeWords.CheckListReflectionInvisible() == true) // If mastered
             {
-                Console.WriteLine($"Congradulations! You have mastered {_challenge.GetReference()} ⭐");
+                MasterScripture(scriptureList);
+                Console.WriteLine($"Congradulations! You have mastered {_challenge.GetReference()}");
+                Console.WriteLine("\n\nPress ENTER to return to Mastery Selection");
+                Console.ReadLine();
             }
             else
             {
                 Console.WriteLine("\n\nReturning to Mastery Selection...");
                 Thread.Sleep(2000);
             }
-            Console.WriteLine("\n\nPress ENTER to return to Mastery Selection");
-            Console.ReadLine();
+
         }
 
     }
@@ -125,13 +138,14 @@ class Program
         public void UpdateWordsList()
         {
             EraseWords(); // Set 5 words to invisible
-
+            int index = 0;
             foreach (int number in _visibleListReflection)
             {
+
                 if (number == 1) // Erase word
                 {
                     // set word according to index
-                    string word = _words[number];
+                    string word = _words[index];
                     // Create Char array
                     char[] letters = word.ToCharArray();
 
@@ -143,8 +157,9 @@ class Program
                         }
 
                     }
-                    _words[number] = new string(letters);
+                    _words[index] = new string(letters);
                 }
+                index++; // update list index
             }
 
         }
@@ -152,25 +167,40 @@ class Program
         public void EraseWords() // Adjusts visibleListReflection
         {
             int count = 0;
-            int repeatCount = 5; // Erase 5 random words
-
-            do
+            int repeatCount = 8; // Erase 8 random words
+            int indexVisibleCount = 0; // Counts how many words are visible
+            foreach (int n in _visibleListReflection)
             {
-                Random random = new Random();
-                int randomNumber = random.Next(_visibleListReflection.Count); // Get random index from list   
-                Console.WriteLine("Display Visible List Reflection");
-                foreach (int n in _visibleListReflection)
+                if (n == 0)
                 {
-                    Console.WriteLine(n);
+                    indexVisibleCount++;
                 }
-                if (_visibleListReflection[randomNumber] == 0)
+            }
+            if (indexVisibleCount <= repeatCount) // If there are less or the same amount of numbers visible than there are numbers being turned invisble
+            {
+                for (int index = 0; index < _visibleListReflection.Count; index++) // Set remaining visible words to invisible
+                {
+
+                    if (_visibleListReflection[index] == 0)
+                    {
+                        _visibleListReflection[index] = 1;
+                    }
+                }
+            }
+            else // Randomly remove words as normal
+            {
+                do
+                {
+                    Random random = new Random();
+                    int randomNumber = random.Next(_visibleListReflection.Count); // Get random index from list   
+
+                    if (_visibleListReflection[randomNumber] == 0)
                     {
                         _visibleListReflection[randomNumber] = 1; // mark invisible
                         count++; // Update count upon successful erase
                     }
-            } while (count < repeatCount);
-
-
+                } while (count < repeatCount);
+            }
         }
         public void DisplayWords()
         {
@@ -190,11 +220,11 @@ class Program
         private int _index;        
         private Words _words = new Words();
 
-        private string _masteryLevel = "";   //"⭐" 
+        private string _masteryLevel = "UNMASTERED"; 
 
         public void MarkMastered()
         {
-            _masteryLevel = "⭐";
+            _masteryLevel = "MASTERED";
         }
         public void CreateScripture(string reference, string text, int index)
         {
@@ -229,8 +259,7 @@ class Program
         public void DisplayScriptureSelection()
         {
             Console.Write($"{_index}) ");
-            Console.Write(_reference);
-            Console.WriteLine(_masteryLevel);
+            Console.WriteLine($"{_reference} [{_masteryLevel}]");
         }
         public void DisplayScripture()
         {
@@ -262,12 +291,13 @@ class Program
         return scriptureList;
     }
 
-    
-    static void DisplayMenu(string fileName)
+
+    static bool DisplayMenu(List<Scripture> scriptureList)
     {
         Console.Clear();
-        Console.WriteLine("Please select which scripture you wish to master by entering the index number");
-        List<Scripture> scriptureList = LoadScriptures(fileName);
+        Console.WriteLine("______SCRIPTURE MASTERY MENU______");
+        Console.WriteLine("Please select which scripture you wish to master by \nentering the index number or type 'quit'");
+
         foreach (Scripture s in scriptureList)
         {
             s.DisplayScriptureSelection();
@@ -282,25 +312,36 @@ class Program
         while (inputCheck == true)
         {
             string userInput = Console.ReadLine();
-            int userSelection = int.Parse(userInput);
-            if (0 < userSelection && userSelection <= listLength)
+            if (userInput != "quit")
             {
-                // Cycle through the scripture list to match the user selection integer with the scripture index
-                Scripture selectedScripture = scriptureList.FirstOrDefault(scripture => scripture.GetIndex() == userSelection);
+                if (0 < int.Parse(userInput) && int.Parse(userInput) <= listLength)
+                {
+                    // Cycle through the scripture list to match the user selection integer with the scripture index
+                    Scripture selectedScripture = scriptureList.FirstOrDefault(scripture => scripture.GetIndex() == int.Parse(userInput));
 
-                Challenger challenger = new Challenger();
-                challenger.GetScriptureChallenge(selectedScripture);
-                challenger.PlayChallenge();
-                inputCheck = false;
+                    Challenger challenger = new Challenger();
+                    challenger.GetScriptureChallenge(selectedScripture);
+                    challenger.PlayChallenge(scriptureList);
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine("ERROR. Please enter valid index.");
+                    Thread.Sleep(2000);
+                    return true;
+
+                }
+
+
             }
+
             else
             {
-                Console.WriteLine("ERROR. Please enter valid index.");
-                Thread.Sleep(2000);
-                
+                return false;
             }
-        }
 
+        }
+        return true;
     }
 
 
@@ -308,6 +349,7 @@ class Program
     {
         // Initialize scripture list
         string fileName = "scripture_file.txt";
+        List<Scripture> scriptureList = LoadScriptures(fileName);
         bool runProgram = true;
         Console.Clear();
         Console.WriteLine("Welcome to Scripture Mastery, made by Aaron Aultz.\nPress any key to continue");
@@ -316,7 +358,7 @@ class Program
         // Initialize game loop
         while (runProgram == true)
         {
-            DisplayMenu(fileName);
+            runProgram = DisplayMenu(scriptureList);
         }
         
 
