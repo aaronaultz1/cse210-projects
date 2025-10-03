@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 
 // References
 // https://learn.microsoft.com/en-us/dotnet/csharp/how-to/parse-strings-using-split
@@ -13,22 +14,28 @@ class Program
     public class Scripture
     {
         private string _reference = "";
+        private string _text = "";
         private List<string> _words = new List<string>();
+        private int _index;
+
         //private string _masteryLevel = "";   //"⭐" 
 
-        public void DisplayScripture()
-        {
-            Console.WriteLine(_reference);
-            foreach (string word in _words)
-            {
-                Console.Write($"{word} ");
-            }
-        }
-
-        public void ConstructScripture(string reference, string text)
+        public void CreateScripture(string reference, string text, int index)
         {
             // Set reference
             _reference = reference;
+            // Set text
+            _text = text;
+            // Set index
+            _index = index;
+            //Construct Scripture List
+            ConstructWordsList(_text);
+            
+        }
+
+        public void ConstructWordsList(string text)
+        {
+
             // Parse and create list of words
             List<string> wordsArray = text.Split(' ').ToList();
             // Sycle through parsed list and add each word to the main _words list
@@ -38,33 +45,52 @@ class Program
             }
 
         }
+
+        public void DisplayScripture()
+        {
+            Console.WriteLine(_reference);
+            foreach (string word in _words)
+            {
+                Console.Write($"{word} ");
+            }
+            Console.WriteLine("\n");
+        }
     }
 
-    void loadScriptures(List<string> scriptureList)
+    static List<Scripture> LoadScriptures(string fileName)
+    {
+        List<Scripture> scriptureList = new List<Scripture>();
+        string[] fileLines = System.IO.File.ReadAllLines(fileName);
+        int i = 1;
+        foreach (string line in fileLines)
         {
-        
-            string[] fileLines = System.IO.File.ReadAllLines(scriptures.txt);
+            Scripture scripture = new Scripture();
+            string[] entryData = line.Split("|"); // Split scripture data, reference | text
 
-            foreach (string line in fileLines)
-            {
-                
-                string[] entryData = line.Split("|"); // Split scripture data, reference | text
+            // Set variables 
 
-                // Set variables 
-                reference = entryData[0];
-                text = entryData[1];
-
-                scriptureList.Add(scripture);
-            }
+            string reference = entryData[0];
+            string text = entryData[1];
+            int index = i;
+            scriptureList.Add(scripture);
+            i = i + 1;
+            scripture.CreateScripture(reference, text, index);
+            scriptureList.Add(scripture); 
         }
+        return scriptureList;        
+    }
 
-      
+
+
 
     static void Main(string[] args)
     {
         // Initialize scripture list
-        List<Scripture> scriptureList = "";
-        loadScriptures(scriptureList);
-        
+        string fileName = "scripture_file.txt";
+        List<Scripture> scriptureList = LoadScriptures(fileName);
+        foreach (Scripture s in scriptureList)
+        {
+            s.DisplayScripture();
+        }
     }
 }
