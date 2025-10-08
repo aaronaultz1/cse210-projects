@@ -296,7 +296,7 @@ class Program
     {
         Console.Clear();
         Console.WriteLine("______SCRIPTURE MASTERY MENU______");
-        Console.WriteLine("Please select which scripture you wish to master by \nentering the index number or type 'quit'");
+        Console.WriteLine("Please select which scripture you wish to master by entering the index number or type 'quit'");
 
         foreach (Scripture s in scriptureList)
         {
